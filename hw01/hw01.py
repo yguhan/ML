@@ -17,20 +17,21 @@ def k_mean(matContents, k, count):
 	for a,b in zip(matContents['x'], matContents['y']):
 		for c,d in zip(a,b):
 			dataSet.append((c,d))
-#	print "dataSet"
-#	print dataSet
 
 	mu_index=[]
 	distanceSet=[]
-	kDummy=[]
 	for x in range(k):
 		mu_index.append(0)
 		distanceSet.append(0)
-		kDummy.append([])
 	
 	for c in range(count):
-		resultSet.append(kDummy)	
-	
+		resultSet.append([])	
+		for i in range(k):
+			resultSet[c].append([])
+		
+	print "resultSet : "
+	print resultSet	
+
 	for i in range(k):
 		overlap=True
 		while(overlap):
@@ -45,24 +46,27 @@ def k_mean(matContents, k, count):
 
 	for i in range(k):
 		mu.append(dataSet[mu_index[i]])
-		print "cluster: ",i, " initial mu: ", mu[i]
 
 
 	for c in range(count):
+			print "learning : ",c
 			for x in dataSet:
 				for i in range(k):
 					distanceSet[i] = distance.euclidean(x,mu[i])
 				resultSet[c][ distanceSet.index(min(distanceSet)) ].append( (x, mu[distanceSet.index(min(distanceSet))]) )
+			print "mu" ,mu			
+			print "cluster 0"
+			print resultSet[c][0]
+			print "cluster 1"
+			print resultSet[c][1]
+			print "cluster 0 + cluster 1 : ",len(resultSet[c][0])+len(resultSet[c][1])
 			for i in range(k):
 				sumX=0
 				sumY=0
+	#			print "resultSet[c][i][0]"
+	#			print resultSet[c][i][0]
 				for x,y in resultSet[c][i][0]:
 					sumX+=x
 					sumY+=y
 				mu[i]=( sumX/len(resultSet[c][i]) , sumY/len(resultSet[c][i]) )
-			print "mu" ,mu							
-
-	print "resultSet"
-	print resultSet[count-1][0]
-	
-k_mean(matContents,2,1)
+k_mean(matContents,2,6)
