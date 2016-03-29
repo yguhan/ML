@@ -2,6 +2,7 @@ import scipy.io as sio
 from scipy.spatial import distance
 import math
 import random
+import Image
 
 matContents=sio.loadmat('data0.mat')
 
@@ -11,7 +12,8 @@ def k_mean(matContents, k, count):
 	dataSet=[]
 	resultSet=[]
 	n=len(matContents['x'])*len(matContents['x'][0])
-	
+		
+
 	print "number of data set :" ,n	
 	print "number of testing :", count
 	for a,b in zip(matContents['x'], matContents['y']):
