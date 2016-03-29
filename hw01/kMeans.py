@@ -28,9 +28,6 @@ def k_mean(matContents, k, count):
 		resultSet.append([])	
 		for i in range(k):
 			resultSet[c].append([])
-		
-	print "resultSet : "
-	print resultSet	
 
 	for i in range(k):
 		overlap=True
@@ -50,24 +47,29 @@ def k_mean(matContents, k, count):
 
 	for c in range(count):
 			print "learning : ",c
+			print "mu", mu
 			for x in dataSet:
 				for i in range(k):
 					distanceSet[i] = distance.euclidean(x,mu[i])
-				resultSet[c][ distanceSet.index(min(distanceSet)) ].append( (x, mu[distanceSet.index(min(distanceSet))]) )
-			print "mu" ,mu			
-			print "cluster 0"
-			print resultSet[c][0]
-			print "cluster 1"
-			print resultSet[c][1]
-			print "cluster 0 + cluster 1 : ",len(resultSet[c][0])+len(resultSet[c][1])
+#				print "distance Set : ",distanceSet, "min : ",min(distanceSet), "index: ",distanceSet.index(min(distanceSet))
+				resultSet[c][ distanceSet.index(min(distanceSet)) ].append( x )
+			
 			for i in range(k):
-				sumX=0
-				sumY=0
-	#			print "resultSet[c][i][0]"
-	#			print resultSet[c][i][0]
-				for x,y in resultSet[c][i][0]:
-					sumX+=x
-					sumY+=y
-				mu[i]=( sumX/len(resultSet[c][i]) , sumY/len(resultSet[c][i]) )
+#				print "cluster ", i
+				print "number of data in cluster i ",i, ": ", len(resultSet[c][i])
+				print resultSet[c][i]
+		
+			for i in range(k):
+				
+#				print "number of resultSet of cluster i ",i, ": ", len(resultSet[c][i])
+				try:
+					sigmaOfX=0
+					sigmaOfY=0
+					for x,y in resultSet[c][i]:
+						sigmaOfX+=x
+						sigmaOfY+=y
+					mu[i]=( sigmaOfX/len(resultSet[c][i]) , sigmaOfY/len(resultSet[c][i]))	
+				except:
+					print "zero term"
 
-k_mean(matContents,2,5)
+k_mean(matContents,2,2)
