@@ -2,38 +2,31 @@ import scipy.io as sio
 from scipy.spatial import distance
 import math
 import random
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 
 matContents=sio.loadmat('data0.mat')
 
-def moG(matContents, k, count, beta):			 
+def moG(matContents, k, count):			 
 	n=0	
 	mu=[]
-	sig=[]
+	sigma=[]
+	pi=[]
 	dataSet=[]
 	resultSet=[]
 	r=[]
+	mu_index=[]
 	n=len(matContents['x'])*len(matContents['x'][0])
 	
 	print "number of data set :" ,n	
 	print "number of testing :", count
 	for a,b in zip(matContents['x'], matContents['y']):
 		for c,d in zip(a,b):
-			dataSet.append([c,d])
+			dataSet.append(np.matrix([c,d]))
 
-	mu_index=[]
-	distanceSet=[]
-	for x in range(k):
+	for i in range(k):
 		mu_index.append(0)
-		distanceSet.append(0)
-	
-	for c in range(count):
-		resultSet.append([])	
-		for i in range(k):
-			resultSet[c].append([])
-		
 
 	for i in range(k):
 		overlap=True
@@ -49,52 +42,69 @@ def moG(matContents, k, count, beta):
 
 	for i in range(k):
 		mu.append(dataSet[mu_index[i]])
-
+		sigma.append(np.identity(k))
+		pi.append(1.0/k)
 
 	for c in range(count):
 			print "learning : ",c
 			print "mu", mu			
-			r=eStep(dataSet, k, mu, beta)
-			mu=mStep(dataSet, k, mu, r)
-	#		print "test : ", r[0][10]+r[1][10]
+			print "sigma", sigma	
+			r=eStep(dataSet, mu, sigma, pi)
+			mu, sigma, pi = mStep(r, dataSet)
 
-def eStep(dataSet, k, mu, beta):
-	r=numpy.zeros(shape=(k,len(dataSet)))
-	term=[]
-	for i in range(k):
-		r.append([])
-		term.append([])
 
-	for i in range(k):
-		for x in dataSet:
-			term[i].append( math.exp(-beta* math.pow(distance.euclidean(x,mu[i]),2)) )
-	for i in range(k):
-		for x in range(len(dataSet)):
-			sigma=0
-			for j in range(k):
-				sigma+=term[j][x]	
-			r[i].append( term[i][x]/sigma )
+def eStep(dataSet, mu, sigma, pi):
+
+	k=len(mu)
+	N=len(dataSet)
+	r=np.empty([k,N])
+	print "mu: ", mu		 	
+	nominator=0
+	denominator=0
+
+
+	for j in range(k):
+		index=0
+		for i in range(len(dataSet)):
+			nominator=pdf(mu[j],sigma[j],dataSet[index],N)*pi[j]
+			denominator=0
+			for q in range(k):
+				denominator+=pdf(mu[q],sigma[q],dataSet[index], N) * pi[q]		 
+			r[j][i]=nominator/denominator
+			index+=1
 	print "R"
-	print r
+#	print r
 	return r
 
-def mStep(dataSet, k, mu, r):
-	for i in range(k):
-		sigmaRX=[]
-		sigmaR=0
-		indexOfX=0
-		for x in dataSet:
-			sigmaRX.append([r[i][indexOfX]*s for s in x])
-#			print "Rx: ", sigmaRx
-			indexOfX+=1
-		mx=0
-		my=0
-		sigmaR=sum(r[i])
-		for x,y in sigmaRX:
-			mx+=x
-			my+=y			
-		mu[i]= [mx/sigmaR, my/sigmaR]
-				
-	return mu
+def mStep(r, dataSet):
 
-moG(matContents, 2, 4, 0.5)
+	mu = []
+	sigma = []
+	pi=[]
+
+	K = len(r[:,0])
+	N = len(dataSet)
+
+	for j in range(K):
+		nominator=0
+		for i in range(len(dataSet)):
+			nominator+=r[j][i]*dataSet[i]
+		mu.append(nominator/sum(r[j]))
+	
+	for j in range(K):
+		nominator=0
+		for i in range(len(dataSet)):
+			nominator+=r[j][i]*np.dot((dataSet[i]-mu[j]).transpose(), (dataSet[i]-mu[j]))
+		sigma.append(nominator/sum(r[j]))	
+
+	for j in range(K):
+		pi.append(sum(r[j])/len(dataSet))
+	return mu, sigma, pi
+
+def pdf(mu, sigma, x, N):
+	A=math.pow(2*math.pi,-0.5*N) * math.pow(np.absolute(np.linalg.det(sigma)), -0.5)
+	B=math.exp( -0.5*np.dot(np.dot( x-mu, np.linalg.inv(sigma)), (x-mu).transpose() ) )
+	return A*B
+
+
+moG(matContents, 2, 10)
