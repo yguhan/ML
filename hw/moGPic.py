@@ -5,11 +5,13 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
+import Image
 
-matContents=sio.loadmat('data0.mat')
+img=Image.open('108005.jpg')
 
 def moG(matContents, k, count):			 
-	n=0	
+	n=0
+	D=0	
 	mu=[]
 	sigma=[]
 	pi=[]
@@ -17,14 +19,16 @@ def moG(matContents, k, count):
 	resultSet=[]
 	r=[]
 	mu_index=[]
-	n=len(matContents['x'])*len(matContents['x'][0])
-	D=2
+
+	imgSet = list(img.getdata())
+	n=len(imgSet)
+	D=len(imgSet[0])	
 
 	print "number of data set :" ,n	
 	print "number of testing :", count
-	for a,b in zip(matContents['x'], matContents['y']):
-		for c,d in zip(a,b):
-			dataSet.append(np.matrix([c,d]))
+	
+	for r,g,b in imgSet:
+		dataSet.append(np.matrix([r,g,b]))
 
 	for i in range(k):
 		mu_index.append(0)
@@ -41,17 +45,31 @@ def moG(matContents, k, count):
 			if(i==0):
 				overlap=False
 
-
 	for i in range(k):
 		mu.append(dataSet[mu_index[i]])
-		sigma.append(np.identity(D))
+		sigma.append(100*np.identity(D))
 		pi.append(1.0/k)
+
 	for c in range(count):
 			print "learning : ",c
 			print "mu", mu			
 			print "sigma", sigma	
 			r=eStep(dataSet, mu, sigma, pi)
 			mu, sigma, pi = mStep(r, dataSet)
+
+	mu_rgb=[]
+	for j in range(k):
+		for R,G,B in map(tuple,mu[j].A):
+			mu_rgb.append( (int(R), int(G), int(B)) )		
+
+	for i in range(n):
+		minIndex=r[:,i].argmin()
+		resultSet.append( mu_rgb[minIndex] )
+
+	moGImg=Image.new('RGB',img.size)
+	moGImg.putdata(resultSet)
+	moGImg.save('moGImg.jpg')
+	moGImg.show()
 """
 	for i in range(k):
 		x,y= np.random.multivariate_normal(mu[i], sigma[i], 50).T
@@ -63,10 +81,8 @@ def eStep(dataSet, mu, sigma, pi):
 	k=len(mu)
 	N=len(dataSet)
 	r=np.empty([k,N])
-	print "mu: ", mu		 	
 	nominator=0
 	denominator=0
-
 
 	for j in range(k):
 		index=0
@@ -86,31 +102,32 @@ def mStep(r, dataSet):
 	mu = []
 	sigma = []
 	pi=[]
-
 	K = len(r[:,0])
 	N = len(dataSet)
-
 	for j in range(K):
 		nominator=0
-		for i in range(len(dataSet)):
+		for i in range(N):
 			nominator+=r[j][i]*dataSet[i]
 		mu.append(nominator/sum(r[j]))
 	
 	for j in range(K):
 		nominator=0
-		for i in range(len(dataSet)):
+		for i in range(N):
 			nominator+=r[j][i]*np.dot((dataSet[i]-mu[j]).transpose(), (dataSet[i]-mu[j]))
 		sigma.append(nominator/sum(r[j]))	
 
 	for j in range(K):
-		pi.append(sum(r[j])/len(dataSet))
+		minIndex=pi.append(sum(r[j])/N)
+			
 	return mu, sigma, pi
 
 def pdf(mu, sigma, x):
-	k=len(sigma)
-	A=math.pow(2*math.pi,-0.5*k) * math.pow(np.absolute(np.linalg.det(sigma)), -0.5)
+	
+	D=len(sigma)
+	A=math.pow(2*math.pi,-0.5*D) * math.pow(np.absolute(np.linalg.det(sigma)), -0.5)
 	B=math.exp( -0.5*np.dot(np.dot( x-mu, np.linalg.inv(sigma)), (x-mu).transpose() ) )
+#	print "jisoo: ",	 -0.5*np.dot(np.dot( x-mu, np.linalg.inv(sigma)), (x-mu).transpose() )
 	return A*B
 
 
-moG(matContents, 2, 4)
+moG(img, 2, 1)
