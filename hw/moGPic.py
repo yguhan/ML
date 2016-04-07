@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 import Image
 
-img=Image.open('108005.jpg')
+img=Image.open('3096.jpg')
 
 def moG(matContents, k, count):			 
 	n=0
@@ -63,8 +63,8 @@ def moG(matContents, k, count):
 			mu_rgb.append( (int(R), int(G), int(B)) )		
 
 	for i in range(n):
-		minIndex=r[:,i].argmin()
-		resultSet.append( mu_rgb[minIndex] )
+		maxIndex=r[:,i].argmax()
+		resultSet.append( mu_rgb[maxIndex] )
 
 	moGImg=Image.new('RGB',img.size)
 	moGImg.putdata(resultSet)
@@ -126,8 +126,9 @@ def pdf(mu, sigma, x):
 	D=len(sigma)
 	A=math.pow(2*math.pi,-0.5*D) * math.pow(np.absolute(np.linalg.det(sigma)), -0.5)
 	B=math.exp( -0.5*np.dot(np.dot( x-mu, np.linalg.inv(sigma)), (x-mu).transpose() ) )
-#	print "jisoo: ",	 -0.5*np.dot(np.dot( x-mu, np.linalg.inv(sigma)), (x-mu).transpose() )
 	return A*B
 
 
-moG(img, 2, 1)
+moG(img, 2, 3)
+moG(img, 5, 3)
+moG(img, 7, 3)

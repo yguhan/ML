@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 
-matContents=sio.loadmat('data0.mat')
+matContents=sio.loadmat('data3.mat')
 
 def moG(matContents, k, count):			 
 	n=0	
@@ -113,4 +113,4 @@ def pdf(mu, sigma, x):
 	return A*B
 
 
-moG(matContents, 2, 4)
+moG(matContents, 2, 5)
